@@ -6,7 +6,7 @@
   <title>Flappy Bird</title>
   <style>
     body { margin: 0; background: #87CEEB; }
-    canvas { display: block; margin: 0 auto; background: #70c5ce; }
+    canvas { display: block; margin: 0 auto; background: #70c5ce; touch-action: manipulation; }
   </style>
 </head>
 <body>
@@ -103,7 +103,7 @@
       ctx.font = "40px Arial";
       ctx.fillText("Game Over!", 100, canvas.height / 2);
       ctx.font = "20px Arial";
-      ctx.fillText("Press Space to Restart", 100, canvas.height / 2 + 40);
+      ctx.fillText("Press Space or Tap to Restart", 70, canvas.height / 2 + 40);
     }
 
     function resetGame() {
@@ -115,14 +115,22 @@
       gameOver = false;
     }
 
+    function handleJumpOrRestart() {
+      if (gameOver) {
+        resetGame();
+      } else {
+        bird.velocity = bird.jump;
+      }
+    }
+
     document.addEventListener("keydown", (e) => {
       if (e.code === "Space") {
-        if (gameOver) {
-          resetGame();
-        } else {
-          bird.velocity = bird.jump;
-        }
+        handleJumpOrRestart();
       }
+    });
+
+    document.addEventListener("touchstart", () => {
+      handleJumpOrRestart();
     });
 
     function loop() {
