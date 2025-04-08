@@ -65,14 +65,13 @@
         dino.onGround = true;
       }
 
-      if (frame % 120 === 0) {
+      if (frame % 150 === 0) {
         createObstacle();
       }
 
       obstacles.forEach(ob => {
-        ob.x -= 5;
+        ob.x -= 3;  // ← 속도 느리게
 
-        // 충돌 체크
         if (
           dino.x < ob.x + ob.width &&
           dino.x + dino.width > ob.x &&
@@ -82,7 +81,6 @@
           gameOver = true;
         }
 
-        // 점수
         if (ob.x + ob.width === dino.x) {
           score++;
         }
