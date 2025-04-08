@@ -5,9 +5,19 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Dino Run</title>
   <style>
-    body { margin: 0; background: #f7f7f7; }
-    canvas { display: block; margin: 0 auto; background: #fff; touch-action: manipulation; }
-  </style>
+  body {
+    margin: 0;
+    background: url('./images/background.gif') no-repeat center center fixed;
+    background-size: cover;
+  }
+  canvas {
+    display: block;
+    margin: 0 auto;
+    background: transparent; /* <- 배경이 보이게 하려면 transparent */
+    touch-action: manipulation;
+  }
+</style>
+
 </head>
 <body>
   <canvas id="gameCanvas" width="600" height="400"></canvas>
