@@ -23,7 +23,6 @@
       display: grid;
       grid-template-columns: repeat(3, 100px);
       grid-gap: 15px;
-      margin-top: 10px;
     }
     .hole {
       width: 100px;
@@ -40,6 +39,11 @@
       background: url('./images/illustration-mole-main.png') no-repeat center center;
       background-size: contain;
       cursor: pointer;
+      animation: pop 0.3s ease-out;
+    }
+    @keyframes pop {
+      0% { transform: translateY(100%); opacity: 0; }
+      100% { transform: translateY(0); opacity: 1; }
     }
     #score, #high-score, #level {
       margin: 5px;
@@ -59,29 +63,62 @@
       width: 100%;
       transition: width 0.3s;
     }
-    #start-btn {
+    #start-button {
       padding: 10px 20px;
       font-size: 18px;
-      margin-top: 10px;
-      background-color: #ff9800;
+      background-color: #2196f3;
       border: none;
-      border-radius: 10px;
+      border-radius: 5px;
       cursor: pointer;
-      color: #fff;
+      margin-bottom: 10px;
     }
-    #start-btn:hover {
-      background-color: #e65100;
+    #game-over-screen {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background-color: rgba(0, 0, 0, 0.85);
+      color: white;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      z-index: 999;
+      display: none;
+    }
+    #game-over-screen h2 {
+      font-size: 36px;
+      margin-bottom: 10px;
+    }
+    #game-over-screen p {
+      font-size: 20px;
+      margin-bottom: 20px;
+    }
+    #restart-button {
+      padding: 10px 20px;
+      font-size: 18px;
+      background-color: #4caf50;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
     }
   </style>
 </head>
 <body>
   <h1>Whack-a-Mole 🐹</h1>
+  <button id="start-button">Start Game</button>
   <div id="score">Score: 0</div>
   <div id="high-score">High Score: 0</div>
   <div id="level">Level: 1</div>
   <div id="time-bar"><div id="time-fill"></div></div>
-  <button id="start-btn">게임 시작</button>
   <div id="game-board"></div>
+
+  <div id="game-over-screen">
+    <h2>Game Over</h2>
+    <p id="final-score">Your score: 0</p>
+    <button id="restart-button">Play Again</button>
+  </div>
 
   <script>
     const gameBoard = document.getElementById("game-board");
@@ -89,14 +126,19 @@
     const highScoreDisplay = document.getElementById("high-score");
     const levelDisplay = document.getElementById("level");
     const timeFill = document.getElementById("time-fill");
-    const startBtn = document.getElementById("start-btn");
+    const startButton = document.getElementById("start-button");
+
+    const gameOverScreen = document.getElementById("game-over-screen");
+    const finalScoreDisplay = document.getElementById("final-score");
+    const restartButton = document.getElementById("restart-button");
 
     let score = 0;
     let level = 1;
     let highScore = parseInt(localStorage.getItem("moleHighScore")) || 0;
-    let timeLeft = 30; // seconds
+    let timeLeft = 30;
     let moleSpeed = 1000;
     let gameInterval, moleTimeout, timerInterval;
+    let gameStarted = false;
 
     highScoreDisplay.textContent = "High Score: " + highScore;
 
@@ -112,7 +154,7 @@
       const mole = document.createElement("div");
       mole.classList.add("mole");
       const randomHole = holes[Math.floor(Math.random() * holes.length)];
-      randomHole.innerHTML = ''; // clear previous
+
       randomHole.appendChild(mole);
 
       mole.addEventListener("click", () => {
@@ -144,49 +186,59 @@
       timeFill.style.width = percent + "%";
 
       if (timeLeft <= 0) {
-        endGame();
+        clearInterval(timerInterval);
+        clearInterval(gameInterval);
+        clearTimeout(moleTimeout);
+
+        if (score > highScore) {
+          highScore = score;
+          localStorage.setItem("moleHighScore", highScore);
+        }
+
+        showGameOverScreen();
       }
     }
 
-    function clearAllMoles() {
-      holes.forEach(hole => hole.innerHTML = '');
+    function showGameOverScreen() {
+      finalScoreDisplay.textContent = "Your score: " + score;
+      gameOverScreen.style.display = "flex";
     }
 
-    function endGame() {
-      clearInterval(timerInterval);
-      clearInterval(gameInterval);
-      clearTimeout(moleTimeout);
-      clearAllMoles();
-
-      alert("Time's up! Your score: " + score);
-
-      if (score > highScore) {
-        highScore = score;
-        localStorage.setItem("moleHighScore", highScore);
-        highScoreDisplay.textContent = "High Score: " + highScore;
-      }
-
-      startBtn.style.display = "inline-block";
+    function hideGameOverScreen() {
+      gameOverScreen.style.display = "none";
     }
 
-    function startGame() {
+    function resetGame() {
       score = 0;
       level = 1;
       timeLeft = 30;
       moleSpeed = 1000;
+      gameStarted = false;
+      scoreDisplay.textContent = "Score: 0";
+      levelDisplay.textContent = "Level: 1";
+      highScoreDisplay.textContent = "High Score: " + highScore;
+      timeFill.style.width = "100%";
+      holes.forEach(hole => hole.innerHTML = "");
+      startButton.style.display = "inline-block";
+      hideGameOverScreen();
+    }
 
+    startButton.addEventListener("click", () => {
+      if (gameStarted) return;
+      gameStarted = true;
+      score = 0;
+      level = 1;
+      timeLeft = 30;
+      moleSpeed = 1000;
       scoreDisplay.textContent = "Score: 0";
       levelDisplay.textContent = "Level: 1";
       timeFill.style.width = "100%";
-      highScoreDisplay.textContent = "High Score: " + highScore;
-      startBtn.style.display = "none";
-      clearAllMoles();
-
+      startButton.style.display = "none";
       gameInterval = setInterval(showMole, moleSpeed);
       timerInterval = setInterval(updateTimer, 1000);
-    }
+    });
 
-    startBtn.addEventListener("click", startGame);
+    restartButton.addEventListener("click", resetGame);
   </script>
 </body>
 </html>
