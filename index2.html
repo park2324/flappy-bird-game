@@ -15,7 +15,6 @@
     const canvas = document.getElementById("gameCanvas");
     const ctx = canvas.getContext("2d");
 
-    // Images
     const dinoImg = new Image();
     dinoImg.src = "./dino.png";
 
@@ -41,6 +40,8 @@
     let gameOver = false;
     let frame = 0;
     let baseSpeed = 3;
+    let restarting = false;
+    let nextObstacleFrame = 0;
 
     function createCloud() {
       clouds.push({
@@ -79,9 +80,8 @@
       obstacles.push({
         x: canvas.width,
         y: canvas.height - height,
-        //width: 40 + Math.floor(Math.random() * 20),
-        width: 40 ,
-        height: height ,
+        width: 40,
+        height: height,
         passed: false
       });
     }
@@ -110,7 +110,11 @@
         dino.jumpCount = 0;
       }
 
-      if (frame % 150 === 0) createObstacle();
+      // Create obstacle at random intervals
+      if (frame >= nextObstacleFrame) {
+        createObstacle();
+        nextObstacleFrame = frame + 100 + Math.floor(Math.random() * 100); // random between 100~200
+      }
 
       obstacles.forEach(ob => {
         ob.x -= currentSpeed;
@@ -162,19 +166,19 @@
       score = 0;
       frame = 0;
       gameOver = false;
+      nextObstacleFrame = 0;
+      restarting = false;
     }
 
     function jumpOrRestart() {
-  if (gameOver) {
-    setTimeout(() => {
-      resetGame();
-    }, 2000); // 2초(2000ms) 딜레이
-  } else if (dino.jumpCount < dino.maxJumps) {
-    dino.velocityY = dino.jumpPower;
-    dino.jumpCount++;
-  }
-}
-
+      if (gameOver && !restarting) {
+        restarting = true;
+        setTimeout(resetGame, 2000); // 2-second delay
+      } else if (!gameOver && dino.jumpCount < dino.maxJumps) {
+        dino.velocityY = dino.jumpPower;
+        dino.jumpCount++;
+      }
+    }
 
     document.addEventListener("keydown", (e) => {
       if (e.code === "Space") jumpOrRestart();
