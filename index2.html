@@ -63,7 +63,7 @@
 
        // 중력 적용 (공중에 있고 낙하 중일 때 더 빠르게)
   if (!dino.onGround && dino.velocityY > 0) {
-    dino.velocityY += dino.gravity * 1.5; // 낙하 가속
+    dino.velocityY += dino.gravity * 1.2; // 낙하 가속
   } else {
     dino.velocityY += dino.gravity;
   }
