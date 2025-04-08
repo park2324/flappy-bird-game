@@ -30,6 +30,7 @@
     let score = 0;
     let gameOver = false;
     let frame = 0;
+    let baseSpeed = 3;
 
     function drawDino() {
       ctx.fillStyle = "black";
@@ -42,7 +43,8 @@
         x: canvas.width,
         y: canvas.height - height,
         width: 20,
-        height: height
+        height: height,
+        passed: false
       });
     }
 
@@ -55,6 +57,9 @@
 
     function update() {
       if (gameOver) return;
+
+      // 속도 조절 (최대 8)
+      let currentSpeed = Math.min(baseSpeed + Math.floor(score / 10), 8);
 
       dino.velocityY += dino.gravity;
       dino.y += dino.velocityY;
@@ -70,8 +75,9 @@
       }
 
       obstacles.forEach(ob => {
-        ob.x -= 3;  // ← 속도 느리게
+        ob.x -= currentSpeed;
 
+        // 충돌 체크
         if (
           dino.x < ob.x + ob.width &&
           dino.x + dino.width > ob.x &&
@@ -81,8 +87,10 @@
           gameOver = true;
         }
 
-        if (ob.x + ob.width === dino.x) {
+        // 점수 증가: 지나간 장애물 중 아직 점수 안 준 것
+        if (!ob.passed && ob.x + ob.width < dino.x) {
           score++;
+          ob.passed = true;
         }
       });
 
