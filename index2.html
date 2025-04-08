@@ -15,7 +15,10 @@
     const canvas = document.getElementById("gameCanvas");
     const ctx = canvas.getContext("2d");
 
-    // Dino
+    // Dino image
+    const dinoImg = new Image();
+    dinoImg.src = "https://upload.wikimedia.org/wikipedia/commons/thumb/f/fd/Dinosaur_cartoon.svg/64px-Dinosaur_cartoon.svg.png"; // 원하는 이미지로 교체 가능
+
     let dino = {
       x: 50,
       y: 150,
@@ -28,7 +31,6 @@
       maxJumps: 2
     };
 
-    // Game variables
     let obstacles = [];
     let clouds = [];
     let score = 0;
@@ -37,7 +39,6 @@
     let frame = 0;
     let baseSpeed = 3;
 
-    // Background cloud
     function createCloud() {
       clouds.push({
         x: canvas.width,
@@ -58,13 +59,16 @@
     function updateClouds() {
       clouds.forEach(cloud => cloud.x -= cloud.speed);
       clouds = clouds.filter(cloud => cloud.x + cloud.width > 0);
-
       if (frame % 120 === 0) createCloud();
     }
 
     function drawDino() {
-      ctx.fillStyle = "black";
-      ctx.fillRect(dino.x, dino.y, dino.width, dino.height);
+      if (dinoImg.complete) {
+        ctx.drawImage(dinoImg, dino.x, dino.y, dino.width, dino.height);
+      } else {
+        ctx.fillStyle = "black";
+        ctx.fillRect(dino.x, dino.y, dino.width, dino.height);
+      }
     }
 
     function createObstacle() {
@@ -89,20 +93,13 @@
       if (gameOver) return;
 
       let currentSpeed = Math.min(baseSpeed + Math.floor(score / 10), 8);
-
-      // Gravity
-      if (dino.velocityY > 0) {
-        dino.velocityY += dino.gravity * 1.2;
-      } else {
-        dino.velocityY += dino.gravity;
-      }
-
+      dino.velocityY += dino.velocityY > 0 ? dino.gravity * 1.2 : dino.gravity;
       dino.y += dino.velocityY;
 
       if (dino.y >= canvas.height - dino.height) {
         dino.y = canvas.height - dino.height;
         dino.velocityY = 0;
-        dino.jumpCount = 0; // Reset jumps
+        dino.jumpCount = 0;
       }
 
       if (frame % 150 === 0) createObstacle();
@@ -110,7 +107,6 @@
       obstacles.forEach(ob => {
         ob.x -= currentSpeed;
 
-        // 충돌 체크
         if (
           dino.x < ob.x + ob.width &&
           dino.x + dino.width > ob.x &&
@@ -170,26 +166,19 @@
     }
 
     document.addEventListener("keydown", (e) => {
-      if (e.code === "Space") {
-        jumpOrRestart();
-      }
+      if (e.code === "Space") jumpOrRestart();
     });
 
-    document.addEventListener("touchstart", () => {
-      jumpOrRestart();
-    });
+    document.addEventListener("touchstart", () => jumpOrRestart());
 
     function loop() {
       ctx.clearRect(0, 0, canvas.width, canvas.height);
-
       update();
       drawClouds();
       drawDino();
       drawObstacles();
       drawScore();
-
       if (gameOver) showGameOver();
-
       frame++;
       requestAnimationFrame(loop);
     }
