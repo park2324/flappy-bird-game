@@ -165,13 +165,16 @@
     }
 
     function jumpOrRestart() {
-      if (gameOver) {
-        resetGame();
-      } else if (dino.jumpCount < dino.maxJumps) {
-        dino.velocityY = dino.jumpPower;
-        dino.jumpCount++;
-      }
-    }
+  if (gameOver) {
+    setTimeout(() => {
+      resetGame();
+    }, 2000); // 2초(2000ms) 딜레이
+  } else if (dino.jumpCount < dino.maxJumps) {
+    dino.velocityY = dino.jumpPower;
+    dino.jumpCount++;
+  }
+}
+
 
     document.addEventListener("keydown", (e) => {
       if (e.code === "Space") jumpOrRestart();
