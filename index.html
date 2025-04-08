@@ -64,12 +64,12 @@
       bird.velocity += bird.gravity;
       bird.y += bird.velocity;
 
-      if (frame % 100 === 0) {
+      if (frame % 130 === 0) {
         createPipe();
       }
 
       pipes.forEach(pipe => {
-        pipe.x -= 3;
+        pipe.x -= 2;
 
         if (
           bird.x + bird.radius > pipe.x &&
