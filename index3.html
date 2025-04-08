@@ -144,18 +144,29 @@
       timeFill.style.width = percent + "%";
 
       if (timeLeft <= 0) {
-        clearInterval(timerInterval);
-        clearInterval(gameInterval);
-        clearTimeout(moleTimeout);
-        alert("Time's up! Your score: " + score);
-
-        if (score > highScore) {
-          highScore = score;
-          localStorage.setItem("moleHighScore", highScore);
-        }
-
-        startBtn.style.display = "inline-block";
+        endGame();
       }
+    }
+
+    function clearAllMoles() {
+      holes.forEach(hole => hole.innerHTML = '');
+    }
+
+    function endGame() {
+      clearInterval(timerInterval);
+      clearInterval(gameInterval);
+      clearTimeout(moleTimeout);
+      clearAllMoles();
+
+      alert("Time's up! Your score: " + score);
+
+      if (score > highScore) {
+        highScore = score;
+        localStorage.setItem("moleHighScore", highScore);
+        highScoreDisplay.textContent = "High Score: " + highScore;
+      }
+
+      startBtn.style.display = "inline-block";
     }
 
     function startGame() {
@@ -169,6 +180,7 @@
       timeFill.style.width = "100%";
       highScoreDisplay.textContent = "High Score: " + highScore;
       startBtn.style.display = "none";
+      clearAllMoles();
 
       gameInterval = setInterval(showMole, moleSpeed);
       timerInterval = setInterval(updateTimer, 1000);
