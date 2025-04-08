@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>워니게임3</title>
+  <title>Whack a Mole!</title>
   <style>
     body {
       margin: 0;
@@ -51,6 +51,28 @@
       font-size: 20px;
     }
 
+    #highscore {
+      font-size: 16px;
+      margin-top: 5px;
+      color: #444;
+    }
+
+    #progress-container {
+      margin: 20px auto;
+      width: 80%;
+      height: 20px;
+      background-color: #eee;
+      border-radius: 10px;
+      overflow: hidden;
+    }
+
+    #progress-bar {
+      height: 100%;
+      width: 100%;
+      background-color: #2196f3;
+      transition: width 1s linear;
+    }
+
     button {
       margin-top: 15px;
       padding: 10px 20px;
@@ -63,8 +85,12 @@
 
   <h1>두더지를 잡아라!</h1>
   <div id="scoreboard">점수: 0</div>
+  <div id="highscore">최고 점수: 0</div>
+  <div id="progress-container">
+    <div id="progress-bar"></div>
+  </div>
+
   <div class="game-container" id="game">
-    <!-- 9개의 구멍 -->
     <div class="hole"><div class="mole"></div></div>
     <div class="hole"><div class="mole"></div></div>
     <div class="hole"><div class="mole"></div></div>
@@ -81,11 +107,17 @@
   <script>
     const moles = document.querySelectorAll(".mole");
     const scoreboard = document.getElementById("scoreboard");
+    const highscoreDisplay = document.getElementById("highscore");
+    const progressBar = document.getElementById("progress-bar");
+
     let score = 0;
+    let highscore = localStorage.getItem("whackHighScore") || 0;
     let currentMole = null;
     let gameInterval;
-    let gameTime = 30; // 게임 시간 (초)
     let gameTimer;
+    const gameTime = 30; // seconds
+
+    highscoreDisplay.innerText = `최고 점수: ${highscore}`;
 
     function showRandomMole() {
       moles.forEach(m => m.style.display = "none");
@@ -105,18 +137,29 @@
     function startGame() {
       score = 0;
       scoreboard.innerText = "점수: 0";
-
       moles.forEach(m => m.addEventListener("click", moleClicked));
+
+      let timeLeft = gameTime;
+      progressBar.style.width = "100%";
 
       gameInterval = setInterval(showRandomMole, 700);
 
-      let timeLeft = gameTime;
       gameTimer = setInterval(() => {
         timeLeft--;
+        const percent = (timeLeft / gameTime) * 100;
+        progressBar.style.width = percent + "%";
+
         if (timeLeft <= 0) {
           clearInterval(gameInterval);
           clearInterval(gameTimer);
           moles.forEach(m => m.style.display = "none");
+
+          if (score > highscore) {
+            highscore = score;
+            localStorage.setItem("whackHighScore", highscore);
+            highscoreDisplay.innerText = `최고 점수: ${highscore}`;
+          }
+
           alert("게임 종료! 당신의 점수는 " + score + "점입니다.");
         }
       }, 1000);
