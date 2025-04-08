@@ -3,167 +3,148 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Whack a Mole!</title>
+  <title>워니게임3</title>
   <style>
     body {
-      margin: 0;
-      padding: 0;
-      background: linear-gradient(to top, #cceaff, #87ceeb);
       font-family: 'Arial', sans-serif;
-      text-align: center;
+      background: linear-gradient(to top, #1a2a6c, #b21f1f, #fdbb2d);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      height: 100vh;
+      margin: 0;
+      color: #fff;
     }
-
     h1 {
-      margin-top: 20px;
+      margin-bottom: 10px;
     }
-
-    .game-container {
-      width: 300px;
-      margin: 0 auto;
+    #game-board {
       display: grid;
       grid-template-columns: repeat(3, 100px);
-      grid-gap: 10px;
-      margin-top: 20px;
+      grid-gap: 15px;
     }
-
     .hole {
       width: 100px;
       height: 100px;
-      background-color: #4caf50;
-      border-radius: 10px;
+      background-color: #4e342e;
+      border-radius: 50%;
       position: relative;
+      overflow: hidden;
+    }
+    .mole {
+      position: absolute;
+      width: 100%;
+      height: 100%;
+       background-image: url('./images/illustration-mole-main.png') no-repeat center center; /* 귀여운 두더지 이미지 */
+      background-size: contain;
       cursor: pointer;
     }
-
-    .mole {
-      width: 80px;
-      height: 80px;
-      background-image: url('./images/illustration-mole-main.png'); /* 귀여운 두더지 이미지 */
-      background-size: cover;
-      position: absolute;
-      top: 10px;
-      left: 10px;
-      display: none;
-    }
-
-    #scoreboard {
-      margin-top: 20px;
+    #score, #high-score, #level {
+      margin: 5px;
       font-size: 20px;
     }
-
-    #highscore {
-      font-size: 16px;
-      margin-top: 5px;
-      color: #444;
-    }
-
-    #progress-container {
-      margin: 20px auto;
-      width: 80%;
+    #time-bar {
+      width: 300px;
       height: 20px;
-      background-color: #eee;
+      background-color: #ccc;
+      margin: 15px 0;
       border-radius: 10px;
       overflow: hidden;
     }
-
-    #progress-bar {
+    #time-fill {
       height: 100%;
+      background-color: #76ff03;
       width: 100%;
-      background-color: #2196f3;
-      transition: width 1s linear;
-    }
-
-    button {
-      margin-top: 15px;
-      padding: 10px 20px;
-      font-size: 16px;
-      cursor: pointer;
+      transition: width 0.3s;
     }
   </style>
 </head>
 <body>
-
-  <h1>두더지를 잡아라!</h1>
-  <div id="scoreboard">점수: 0</div>
-  <div id="highscore">최고 점수: 0</div>
-  <div id="progress-container">
-    <div id="progress-bar"></div>
-  </div>
-
-  <div class="game-container" id="game">
-    <div class="hole"><div class="mole"></div></div>
-    <div class="hole"><div class="mole"></div></div>
-    <div class="hole"><div class="mole"></div></div>
-    <div class="hole"><div class="mole"></div></div>
-    <div class="hole"><div class="mole"></div></div>
-    <div class="hole"><div class="mole"></div></div>
-    <div class="hole"><div class="mole"></div></div>
-    <div class="hole"><div class="mole"></div></div>
-    <div class="hole"><div class="mole"></div></div>
-  </div>
-
-  <button onclick="startGame()">게임 시작</button>
+  <h1>Whack-a-Mole 🐹</h1>
+  <div id="score">Score: 0</div>
+  <div id="high-score">High Score: 0</div>
+  <div id="level">Level: 1</div>
+  <div id="time-bar"><div id="time-fill"></div></div>
+  <div id="game-board"></div>
 
   <script>
-    const moles = document.querySelectorAll(".mole");
-    const scoreboard = document.getElementById("scoreboard");
-    const highscoreDisplay = document.getElementById("highscore");
-    const progressBar = document.getElementById("progress-bar");
+    const gameBoard = document.getElementById("game-board");
+    const scoreDisplay = document.getElementById("score");
+    const highScoreDisplay = document.getElementById("high-score");
+    const levelDisplay = document.getElementById("level");
+    const timeFill = document.getElementById("time-fill");
 
     let score = 0;
-    let highscore = localStorage.getItem("whackHighScore") || 0;
-    let currentMole = null;
-    let gameInterval;
-    let gameTimer;
-    const gameTime = 30; // seconds
+    let level = 1;
+    let highScore = parseInt(localStorage.getItem("moleHighScore")) || 0;
+    let timeLeft = 30; // seconds
+    let moleSpeed = 1000;
+    let gameInterval, moleTimeout;
 
-    highscoreDisplay.innerText = `최고 점수: ${highscore}`;
+    highScoreDisplay.textContent = "High Score: " + highScore;
 
-    function showRandomMole() {
-      moles.forEach(m => m.style.display = "none");
-      const index = Math.floor(Math.random() * moles.length);
-      currentMole = moles[index];
-      currentMole.style.display = "block";
+    for (let i = 0; i < 9; i++) {
+      const hole = document.createElement("div");
+      hole.classList.add("hole");
+      gameBoard.appendChild(hole);
     }
 
-    function moleClicked(event) {
-      if (event.target === currentMole) {
+    const holes = document.querySelectorAll(".hole");
+
+    function showMole() {
+      const mole = document.createElement("div");
+      mole.classList.add("mole");
+      const randomHole = holes[Math.floor(Math.random() * holes.length)];
+
+      randomHole.appendChild(mole);
+
+      mole.addEventListener("click", () => {
         score++;
-        scoreboard.innerText = "점수: " + score;
-        currentMole.style.display = "none";
+        scoreDisplay.textContent = "Score: " + score;
+        updateLevel();
+        mole.remove();
+      });
+
+      moleTimeout = setTimeout(() => {
+        mole.remove();
+      }, moleSpeed);
+    }
+
+    function updateLevel() {
+      const newLevel = Math.floor(score / 10) + 1;
+      if (newLevel !== level) {
+        level = newLevel;
+        moleSpeed = Math.max(300, 1000 - level * 100);
+        levelDisplay.textContent = "Level: " + level;
+        clearInterval(gameInterval);
+        gameInterval = setInterval(showMole, moleSpeed);
       }
     }
 
-    function startGame() {
-      score = 0;
-      scoreboard.innerText = "점수: 0";
-      moles.forEach(m => m.addEventListener("click", moleClicked));
+    function updateTimer() {
+      timeLeft--;
+      const percent = (timeLeft / 30) * 100;
+      timeFill.style.width = percent + "%";
 
-      let timeLeft = gameTime;
-      progressBar.style.width = "100%";
+      if (timeLeft <= 0) {
+        clearInterval(timerInterval);
+        clearInterval(gameInterval);
+        clearTimeout(moleTimeout);
+        alert("Time's up! Your score: " + score);
 
-      gameInterval = setInterval(showRandomMole, 700);
-
-      gameTimer = setInterval(() => {
-        timeLeft--;
-        const percent = (timeLeft / gameTime) * 100;
-        progressBar.style.width = percent + "%";
-
-        if (timeLeft <= 0) {
-          clearInterval(gameInterval);
-          clearInterval(gameTimer);
-          moles.forEach(m => m.style.display = "none");
-
-          if (score > highscore) {
-            highscore = score;
-            localStorage.setItem("whackHighScore", highscore);
-            highscoreDisplay.innerText = `최고 점수: ${highscore}`;
-          }
-
-          alert("게임 종료! 당신의 점수는 " + score + "점입니다.");
+        if (score > highScore) {
+          highScore = score;
+          localStorage.setItem("moleHighScore", highScore);
         }
-      }, 1000);
+
+        location.reload();
+      }
     }
+
+    // Start game
+    const timerInterval = setInterval(updateTimer, 1000);
+    gameInterval = setInterval(showMole, moleSpeed);
   </script>
 </body>
 </html>
