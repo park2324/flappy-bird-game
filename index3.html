@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Whack a Mole!</title>
+  <style>
+    body {
+      margin: 0;
+      padding: 0;
+      background: linear-gradient(to top, #cceaff, #87ceeb);
+      font-family: 'Arial', sans-serif;
+      text-align: center;
+    }
+
+    h1 {
+      margin-top: 20px;
+    }
+
+    .game-container {
+      width: 300px;
+      margin: 0 auto;
+      display: grid;
+      grid-template-columns: repeat(3, 100px);
+      grid-gap: 10px;
+      margin-top: 20px;
+    }
+
+    .hole {
+      width: 100px;
+      height: 100px;
+      background-color: #4caf50;
+      border-radius: 10px;
+      position: relative;
+      cursor: pointer;
+    }
+
+    .mole {
+      width: 80px;
+      height: 80px;
+      background-image: url('https://i.imgur.com/o5c8Wjd.png'); /* 귀여운 두더지 이미지 */
+      background-size: cover;
+      position: absolute;
+      top: 10px;
+      left: 10px;
+      display: none;
+    }
+
+    #scoreboard {
+      margin-top: 20px;
+      font-size: 20px;
+    }
+
+    button {
+      margin-top: 15px;
+      padding: 10px 20px;
+      font-size: 16px;
+      cursor: pointer;
+    }
+  </style>
+</head>
+<body>
+
+  <h1>두더지를 잡아라!</h1>
+  <div id="scoreboard">점수: 0</div>
+  <div class="game-container" id="game">
+    <!-- 9개의 구멍 -->
+    <div class="hole"><div class="mole"></div></div>
+    <div class="hole"><div class="mole"></div></div>
+    <div class="hole"><div class="mole"></div></div>
+    <div class="hole"><div class="mole"></div></div>
+    <div class="hole"><div class="mole"></div></div>
+    <div class="hole"><div class="mole"></div></div>
+    <div class="hole"><div class="mole"></div></div>
+    <div class="hole"><div class="mole"></div></div>
+    <div class="hole"><div class="mole"></div></div>
+  </div>
+
+  <button onclick="startGame()">게임 시작</button>
+
+  <script>
+    const moles = document.querySelectorAll(".mole");
+    const scoreboard = document.getElementById("scoreboard");
+    let score = 0;
+    let currentMole = null;
+    let gameInterval;
+    let gameTime = 30; // 게임 시간 (초)
+    let gameTimer;
+
+    function showRandomMole() {
+      moles.forEach(m => m.style.display = "none");
+      const index = Math.floor(Math.random() * moles.length);
+      currentMole = moles[index];
+      currentMole.style.display = "block";
+    }
+
+    function moleClicked(event) {
+      if (event.target === currentMole) {
+        score++;
+        scoreboard.innerText = "점수: " + score;
+        currentMole.style.display = "none";
+      }
+    }
+
+    function startGame() {
+      score = 0;
+      scoreboard.innerText = "점수: 0";
+
+      moles.forEach(m => m.addEventListener("click", moleClicked));
+
+      gameInterval = setInterval(showRandomMole, 700);
+
+      let timeLeft = gameTime;
+      gameTimer = setInterval(() => {
+        timeLeft--;
+        if (timeLeft <= 0) {
+          clearInterval(gameInterval);
+          clearInterval(gameTimer);
+          moles.forEach(m => m.style.display = "none");
+          alert("게임 종료! 당신의 점수는 " + score + "점입니다.");
+        }
+      }, 1000);
+    }
+  </script>
+</body>
+</html>
