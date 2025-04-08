@@ -10,16 +10,20 @@
   </style>
 </head>
 <body>
-  <canvas id="gameCanvas" width="600" height="400"></canvas>
+  <canvas id="gameCanvas" width="600" height="200"></canvas>
   <script>
     const canvas = document.getElementById("gameCanvas");
     const ctx = canvas.getContext("2d");
 
+    // Images
     const dinoImg = new Image();
     dinoImg.src = "./dino.png";
 
     const obstacleImg = new Image();
     obstacleImg.src = "./pipe.png";
+
+    const cloudImg = new Image();
+    cloudImg.src = "./cloud.png"; // Make sure this image exists in the same folder
 
     let dino = {
       x: 50,
@@ -40,23 +44,26 @@
     let gameOver = false;
     let frame = 0;
     let baseSpeed = 3;
-    let restarting = false;
-    let nextObstacleFrame = 0;
+    let restartDelay = false;
 
     function createCloud() {
       clouds.push({
         x: canvas.width,
         y: 20 + Math.random() * 50,
         width: 60,
-        height: 20,
+        height: 30,
         speed: 1 + Math.random()
       });
     }
 
     function drawClouds() {
-      ctx.fillStyle = "#ccc";
       clouds.forEach(cloud => {
-        ctx.fillRect(cloud.x, cloud.y, cloud.width, cloud.height);
+        if (cloudImg.complete) {
+          ctx.drawImage(cloudImg, cloud.x, cloud.y, cloud.width, cloud.height);
+        } else {
+          ctx.fillStyle = "#ccc";
+          ctx.fillRect(cloud.x, cloud.y, cloud.width, cloud.height);
+        }
       });
     }
 
@@ -110,11 +117,7 @@
         dino.jumpCount = 0;
       }
 
-      // Create obstacle at random intervals
-      if (frame >= nextObstacleFrame) {
-        createObstacle();
-        nextObstacleFrame = frame + 100 + Math.floor(Math.random() * 100); // random between 100~200
-      }
+      if (frame % 150 === 0) createObstacle();
 
       obstacles.forEach(ob => {
         ob.x -= currentSpeed;
@@ -166,14 +169,15 @@
       score = 0;
       frame = 0;
       gameOver = false;
-      nextObstacleFrame = 0;
-      restarting = false;
+      restartDelay = false;
     }
 
     function jumpOrRestart() {
-      if (gameOver && !restarting) {
-        restarting = true;
-        setTimeout(resetGame, 2000); // 2-second delay
+      if (gameOver && !restartDelay) {
+        restartDelay = true;
+        setTimeout(() => {
+          resetGame();
+        }, 2000);
       } else if (!gameOver && dino.jumpCount < dino.maxJumps) {
         dino.velocityY = dino.jumpPower;
         dino.jumpCount++;
