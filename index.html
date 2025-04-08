@@ -1,1 +1,93 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Woni Game World 🎮</title>
+  <style>
+    body {
+      margin: 0;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background: linear-gradient(to bottom right, #1f4037, #99f2c8);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      height: 100vh;
+      text-align: center;
+      color: white;
+    }
+
+    h1 {
+      font-size: 3em;
+      margin-bottom: 30px;
+      text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+    }
+
+    .button-container {
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+      width: 80%;
+      max-width: 400px;
+    }
+
+    .game-button {
+      padding: 15px 25px;
+      font-size: 1.2em;
+      background: #ffffff20;
+      border: 2px solid white;
+      border-radius: 15px;
+      color: white;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      backdrop-filter: blur(6px);
+    }
+
+    .game-button:hover {
+      background-color: #fff;
+      color: #1f4037;
+      font-weight: bold;
+      transform: scale(1.05);
+    }
+
+    .money-btn {
+      margin-top: 30px;
+      padding: 10px 20px;
+      font-size: 1em;
+      background-color: gold;
+      color: black;
+      border: none;
+      border-radius: 10px;
+      cursor: pointer;
+      transition: all 0.3s ease;
+    }
+
+    .money-btn:hover {
+      background-color: orange;
+      transform: scale(1.05);
+    }
+
+    footer {
+      position: absolute;
+      bottom: 10px;
+      font-size: 0.9em;
+      opacity: 0.7;
+    }
+  </style>
+</head>
+<body>
+  <h1>Welcome to Woni Game World 🕹️</h1>
+
+  <div class="button-container">
+    <button class="game-button" onclick="location.href='https://park2324.github.io/flappy-bird-game/index1.html'">🎯 Game 1</button>
+    <button class="game-button" onclick="location.href='https://park2324.github.io/flappy-bird-game/index2.html'">🐤 Game 2</button>
+    <button class="game-button" onclick="location.href='https://park2324.github.io/flappy-bird-game/index3.html'">🦔 Game 3</button>
+  </div>
+
+  <button class="money-btn">💰 MONEY</button>
+
+  <footer>Made by Woni ✨</footer>
+</body>
+</html>
 
