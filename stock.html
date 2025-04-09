@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>적정주가 계산기</title>
+  <style>
+    body { font-family: sans-serif; padding: 20px; max-width: 480px; margin: auto; background: #f9f9f9; }
+    input, button { width: 100%; padding: 10px; margin: 10px 0; font-size: 16px; }
+    .result { margin-top: 20px; padding: 10px; background: white; border-radius: 8px; box-shadow: 0 0 10px rgba(0,0,0,0.1); }
+  </style>
+</head>
+<body>
+  <h2>적정주가 계산기</h2>
+  <input list="stockList" id="stockInput" placeholder="종목명 입력 (예: 삼성전자)">
+  <datalist id="stockList"></datalist>
+  <button onclick="getStockInfo()">계산하기</button>
+
+  <div class="result" id="resultBox" style="display:none;">
+    <p><strong>종목명:</strong> <span id="stockName"></span></p>
+    <p><strong>현재 주가:</strong> <span id="currentPrice"></span> 원</p>
+    <p><strong>EPS:</strong> <span id="eps"></span></p>
+    <p><strong>PER:</strong> <span id="per"></span></p>
+    <p><strong>적정주가:</strong> <span id="fairPrice"></span> 원</p>
+    <p><strong>판단:</strong> <span id="judgement"></span></p>
+  </div>
+
+  <script>
+    let stockMap = {};
+
+    // 종목 데이터 로드
+    fetch('stocks.json')
+      .then(res => res.json())
+      .then(data => {
+        const datalist = document.getElementById('stockList');
+        data.forEach(stock => {
+          const option = document.createElement('option');
+          option.value = stock.name;
+          datalist.appendChild(option);
+          stockMap[stock.name] = stock.code;
+        });
+      });
+
+    async function getStockInfo() {
+      const name = document.getElementById('stockInput').value;
+      const code = stockMap[name];
+
+      if (!code) {
+        alert("종목명을 정확히 입력해주세요.");
+        return;
+      }
+
+      const yahooCode = code.includes('KQ') ? code + ".KQ" : code + ".KS";
+      const url = `https://query1.finance.yahoo.com/v7/finance/quote?symbols=${yahooCode}`;
+
+      try {
+        const res = await fetch(url);
+        const json = await res.json();
+        const info = json.quoteResponse.result[0];
+
+        const currentPrice = info.regularMarketPrice;
+        const eps = info.epsTrailingTwelveMonths;
+        const per = info.trailingPE;
+
+        const fairPrice = eps * per;
+        const judgement = currentPrice < fairPrice ? '저평가' : '고평가';
+
+        document.getElementById('stockName').textContent = name;
+        document.getElementById('currentPrice').textContent = currentPrice.toLocaleString();
+        document.getElementById('eps').textContent = eps;
+        document.getElementById('per').textContent = per;
+        document.getElementById('fairPrice').textContent = fairPrice.toFixed(2).toLocaleString();
+        document.getElementById('judgement').textContent = judgement;
+        document.getElementById('resultBox').style.display = 'block';
+      } catch (err) {
+        alert("야후 API에서 데이터를 가져오지 못했습니다.");
+        console.error(err);
+      }
+    }
+  </script>
+</body>
+</html>
