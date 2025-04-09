@@ -51,7 +51,8 @@
       }
 
       const yahooCode = code.includes('KQ') ? code + ".KQ" : code + ".KS";
-      const url = `https://query1.finance.yahoo.com/v7/finance/quote?symbols=${yahooCode}`;
+      const proxy = 'https://corsproxy.io/?';
+      const url = `${proxy}https://query1.finance.yahoo.com/v7/finance/quote?symbols=${yahooCode}`;
 
       try {
         const res = await fetch(url);
@@ -66,10 +67,10 @@
         const judgement = currentPrice < fairPrice ? '저평가' : '고평가';
 
         document.getElementById('stockName').textContent = name;
-        document.getElementById('currentPrice').textContent = currentPrice.toLocaleString();
-        document.getElementById('eps').textContent = eps;
-        document.getElementById('per').textContent = per;
-        document.getElementById('fairPrice').textContent = fairPrice.toFixed(2).toLocaleString();
+        document.getElementById('currentPrice').textContent = currentPrice?.toLocaleString() || '-';
+        document.getElementById('eps').textContent = eps || '-';
+        document.getElementById('per').textContent = per || '-';
+        document.getElementById('fairPrice').textContent = isFinite(fairPrice) ? fairPrice.toFixed(2).toLocaleString() : '-';
         document.getElementById('judgement').textContent = judgement;
         document.getElementById('resultBox').style.display = 'block';
       } catch (err) {
