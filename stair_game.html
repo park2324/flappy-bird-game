@@ -1,0 +1,193 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>간단한 계단 오르기 게임</title>
+<style>
+  body { margin: 0; }
+  canvas { display: block; }
+</style>
+</head>
+<body>
+
+<canvas id="gameCanvas"></canvas>
+
+<script>
+ const canvas = document.getElementById('gameCanvas');
+  const ctx = canvas.getContext('2d');
+
+  canvas.width = 480;
+  canvas.height = 320;
+
+  let player = {
+    x: 50,
+    y: canvas.height - 50,
+    width: 20,
+    height: 40,
+    velocityY: 0,
+    gravity: 0.5,
+    isJumping: false,
+    canDoubleJump: false // 2단 점프 가능 여부
+  };
+
+  let stairs = [];
+  let obstacle = {
+    x: canvas.width + 50,
+    y: canvas.height - 30,
+    width: 30,
+    height: 30,
+    speed: 2
+  };
+  let score = 0;
+  let highScore = localStorage.getItem('highScore') || 0; // 로컬 스토리지에서 최고 점수 불러오기
+
+  function createStair() {
+    const stairWidth = Math.random() * 50 + 50;
+    const stairHeight = 20;
+    const stairX = canvas.width + stairWidth;
+    const stairY = Math.random() * (canvas.height - 100) + 50;
+
+    stairs.push({
+      x: stairX,
+      y: stairY,
+      width: stairWidth,
+      height: stairHeight
+    });
+  }
+
+  function updateStairs() {
+    for (let i = 0; i < stairs.length; i++) {
+      stairs[i].x -= 2;
+
+      if (stairs[i].x + stairs[i].width < 0) {
+        stairs.splice(i, 1);
+        i--;
+        score++;
+      }
+    }
+
+    if (Math.random() < 0.01) {
+      createStair();
+    }
+  }
+
+  function updateObstacle() {
+    obstacle.x -= obstacle.speed;
+    if (obstacle.x < -obstacle.width) {
+      obstacle.x = canvas.width + Math.random() * 100;
+    }
+  }
+
+  function checkCollision() {
+    let onStair = false;
+    for (const stair of stairs) {
+      if (
+        player.x < stair.x + stair.width &&
+        player.x + player.width > stair.x &&
+        player.y + player.height > stair.y &&
+        player.y < stair.y + stair.height &&
+        player.velocityY >= 0
+      ) {
+        player.y = stair.y - player.height;
+        player.velocityY = 0;
+        player.isJumping = false;
+        player.canDoubleJump = true; // 계단에 착지하면 2단 점프 가능
+        onStair = true;
+      }
+    }
+    if (!onStair && !player.isJumping && player.y < canvas.height - player.height) {
+      player.velocityY += player.gravity;
+    } else if (player.y >= canvas.height - player.height) {
+      player.y = canvas.height - player.height;
+      player.velocityY = 0;
+      player.isJumping = false;
+      player.canDoubleJump = false; // 땅에 착지하면 2단 점프 불가능 (원한다면 true로 변경 가능)
+    }
+
+    if (
+      player.x < obstacle.x + obstacle.width &&
+      player.x + player.width > obstacle.x &&
+      player.y < obstacle.y + obstacle.height &&
+      player.y + player.height > obstacle.y
+    ) {
+      alert('게임 오버! 점수: ' + score + ', 최고 점수: ' + highScore);
+      updateHighScore();
+      resetGame();
+    }
+  }
+
+  function updateHighScore() {
+    if (score > highScore) {
+      highScore = score;
+      localStorage.setItem('highScore', highScore); // 최고 점수를 로컬 스토리지에 저장
+    }
+  }
+
+  function resetGame() {
+    player = { x: 50, y: canvas.height - 50, width: 20, height: 40, velocityY: 0, gravity: 0.5, isJumping: false, canDoubleJump: false };
+    stairs = [];
+    obstacle.x = canvas.width + 50;
+    score = 0;
+  }
+
+  function drawPlayer() {
+    ctx.fillStyle = 'blue';
+    ctx.fillRect(player.x, player.y, player.width, player.height);
+  }
+
+  function drawStairs() {
+    ctx.fillStyle = 'gray';
+    for (const stair of stairs) {
+      ctx.fillRect(stair.x, stair.y, stair.width, stair.height);
+    }
+  }
+
+  function drawObstacle() {
+    ctx.fillStyle = 'red';
+    ctx.fillRect(obstacle.x, obstacle.y, obstacle.width, obstacle.height);
+  }
+
+  function drawScore() {
+    ctx.fillStyle = 'black';
+    ctx.font = '16px Arial';
+    ctx.fillText('점수: ' + score, 10, 20);
+    ctx.fillText('최고 점수: ' + highScore, 10, 40);
+  }
+
+  function gameLoop() {
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+    updateStairs();
+    updateObstacle();
+
+    player.velocityY += player.gravity;
+    player.y += player.velocityY;
+
+    checkCollision();
+
+    drawStairs();
+    drawObstacle();
+    drawPlayer();
+    drawScore();
+
+    requestAnimationFrame(gameLoop);
+  }
+
+  document.addEventListener('keydown', function(event) {
+    if (event.code === 'Space') {
+      if (!player.isJumping) {
+        player.velocityY = -10;
+        player.isJumping = true;
+        player.canDoubleJump = true; // 첫 번째 점프 후 2단 점프 가능
+      } else if (player.canDoubleJump) {
+        player.velocityY = -8; // 2단 점프 높이를 약간 낮춤
+        player.canDoubleJump = false;
+      }
+    }
+  });
+
+  createStair();
+  gameLoop();
+</script>
+
+</body>
+</html>
