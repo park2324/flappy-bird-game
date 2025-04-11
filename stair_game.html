@@ -12,7 +12,7 @@
 <canvas id="gameCanvas"></canvas>
 
 <script>
- const canvas = document.getElementById('gameCanvas');
+const canvas = document.getElementById('gameCanvas');
   const ctx = canvas.getContext('2d');
 
   canvas.width = 480;
@@ -172,21 +172,34 @@
     requestAnimationFrame(gameLoop);
   }
 
+  function jump() {
+    if (!player.isJumping) {
+      player.velocityY = -10;
+      player.isJumping = true;
+      player.canDoubleJump = true; // 첫 번째 점프 후 2단 점프 가능
+    } else if (player.canDoubleJump) {
+      player.velocityY = -8; // 2단 점프 높이를 약간 낮춤
+      player.canDoubleJump = false;
+    }
+  }
+
   document.addEventListener('keydown', function(event) {
     if (event.code === 'Space') {
-      if (!player.isJumping) {
-        player.velocityY = -10;
-        player.isJumping = true;
-        player.canDoubleJump = true; // 첫 번째 점프 후 2단 점프 가능
-      } else if (player.canDoubleJump) {
-        player.velocityY = -8; // 2단 점프 높이를 약간 낮춤
-        player.canDoubleJump = false;
-      }
+      jump();
     }
+  });
+
+  canvas.addEventListener('touchstart', function(event) {
+    event.preventDefault(); // 터치 이벤트 기본 동작 방지 (스크롤 등)
+    jump();
   });
 
   createStair();
   gameLoop();
+</script>
+
+</body>
+</html>
 </script>
 
 </body>
