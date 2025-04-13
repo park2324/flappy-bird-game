@@ -35,9 +35,10 @@
       text-shadow: 2px 2px 2px #000;
     }
 
+    /* Button container adjusted for corner placement */
     .controls {
       position: fixed;
-      bottom: 10px;
+      bottom: 20px;
       width: 100%;
       display: flex;
       justify-content: space-between;
@@ -89,7 +90,7 @@
   </style>
 </head>
 <body>
-  <div class="score" id="score">점수: 0  /  최고: 0</div>
+  <div class="score" id="score">점수: 0 | 최고: 0</div>
   <div class="canvas-container">
     <canvas id="gameCanvas"></canvas>
   </div>
@@ -121,7 +122,7 @@
       canvas.height = window.innerHeight;
       playerX = canvas.width / 2;
       playerY = canvas.height - groundHeight - 40;
-      document.getElementById("score").innerText = `점수: ${score}  /  최고: ${highScore}`;
+      document.getElementById("score").innerText = `점수: ${score} | 최고: ${highScore}`;
     }
 
     // Initialize game
