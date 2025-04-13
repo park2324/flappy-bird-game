@@ -2,154 +2,113 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>워니게임1</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Falling Object Game</title>
   <style>
-    body { margin: 0; background: #87CEEB; }
-    canvas { display: block; margin: 0 auto; background: #70c5ce; touch-action: manipulation; }
+    body {
+      margin: 0;
+      overflow: hidden;
+      background: #222;
+    }
+    canvas {
+      display: block;
+    }
+    .controls {
+      position: absolute;
+      bottom: 20px;
+      width: 100%;
+      text-align: center;
+      z-index: 1;
+    }
+    .button {
+      background: #fff;
+      color: #000;
+      padding: 20px;
+      margin: 0 20px;
+      font-size: 24px;
+      border-radius: 10px;
+      display: inline-block;
+      user-select: none;
+    }
+    .button:active {
+      background: #ccc;
+    }
   </style>
 </head>
 <body>
-  <canvas id="gameCanvas" width="400" height="600"></canvas>
-  <script>
-    const canvas = document.getElementById("gameCanvas");
-    const ctx = canvas.getContext("2d");
+  <canvas id="gameCanvas"></canvas>
+  <div class="controls">
+    <span class="button" id="leftBtn">⬅️</span>
+    <span class="button" id="rightBtn">➡️</span>
+  </div>
 
-    const bird = {
-      x: 80,
-      y: 150,
-      radius: 20,
-      gravity: 0.6,
-      velocity: 0,
-      jump: -10
+  <script>
+    const canvas = document.getElementById('gameCanvas');
+    const ctx = canvas.getContext('2d');
+
+    // Resize canvas to full screen
+    function resizeCanvas() {
+      canvas.width = window.innerWidth;
+      canvas.height = window.innerHeight;
+    }
+    window.addEventListener('resize', resizeCanvas);
+    resizeCanvas();
+
+    // Game object
+    const player = {
+      x: canvas.width / 2,
+      y: 0,
+      size: 50,
+      color: 'skyblue',
+      speedX: 0,
+      speedY: 2
     };
 
-    let pipes = [];
-    let frame = 0;
-    let score = 0;
-    let gameOver = false;
+    // Movement
+    let leftPressed = false;
+    let rightPressed = false;
 
-    function drawBird() {
-      ctx.beginPath();
-      ctx.arc(bird.x, bird.y, bird.radius, 0, Math.PI * 2);
-      ctx.fillStyle = "white";
-      ctx.fill();
-      ctx.closePath();
-    }
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'ArrowLeft') leftPressed = true;
+      if (e.key === 'ArrowRight') rightPressed = true;
+    });
+    document.addEventListener('keyup', (e) => {
+      if (e.key === 'ArrowLeft') leftPressed = false;
+      if (e.key === 'ArrowRight') rightPressed = false;
+    });
 
-    function createPipe() {
-      const gap = 140;
-      const topHeight = Math.floor(Math.random() * 250) + 50;
-      const bottomY = topHeight + gap;
+    // Mobile controls
+    document.getElementById('leftBtn').addEventListener('touchstart', () => leftPressed = true);
+    document.getElementById('leftBtn').addEventListener('touchend', () => leftPressed = false);
+    document.getElementById('rightBtn').addEventListener('touchstart', () => rightPressed = true);
+    document.getElementById('rightBtn').addEventListener('touchend', () => rightPressed = false);
 
-      pipes.push({
-        x: canvas.width,
-        topHeight,
-        bottomY,
-        width: 60
-      });
-    }
-
-    function drawPipes() {
-      ctx.fillStyle = "green";
-      pipes.forEach(pipe => {
-        ctx.fillRect(pipe.x, 0, pipe.width, pipe.topHeight);
-        ctx.fillRect(pipe.x, pipe.bottomY, pipe.width, canvas.height);
-      });
-    }
-
+    // Game loop
     function update() {
-      if (gameOver) return;
+      // Horizontal movement
+      if (leftPressed) player.speedX = -5;
+      else if (rightPressed) player.speedX = 5;
+      else player.speedX = 0;
 
-      bird.velocity += bird.gravity;
-      bird.y += bird.velocity;
+      player.x += player.speedX;
+      player.y += player.speedY;
 
-      if (frame % 130 === 0) {
-        createPipe();
-      }
+      // Keep within bounds
+      if (player.x < 0) player.x = 0;
+      if (player.x + player.size > canvas.width) player.x = canvas.width - player.size;
+      if (player.y > canvas.height) player.y = 0; // Reset to top when it falls off
 
-      pipes.forEach(pipe => {
-        pipe.x -= 2;
-
-        if (
-          bird.x + bird.radius > pipe.x &&
-          bird.x - bird.radius < pipe.x + pipe.width &&
-          (bird.y - bird.radius < pipe.topHeight ||
-           bird.y + bird.radius > pipe.bottomY)
-        ) {
-          gameOver = true;
-        }
-
-        if (pipe.x + pipe.width === bird.x) {
-          score++;
-        }
-      });
-
-      if (bird.y + bird.radius > canvas.height || bird.y - bird.radius < 0) {
-        gameOver = true;
-      }
-
-      pipes = pipes.filter(pipe => pipe.x + pipe.width > 0);
+      draw();
+      requestAnimationFrame(update);
     }
 
-    function drawScore() {
-      ctx.fillStyle = "white";
-      ctx.font = "30px Arial";
-      ctx.fillText("Score: " + score, 10, 50);
-    }
-
-    function showGameOver() {
-      ctx.fillStyle = "red";
-      ctx.font = "40px Arial";
-      ctx.fillText("Game Over!", 100, canvas.height / 2);
-      ctx.font = "20px Arial";
-      ctx.fillText("Press Space or Tap to Restart", 70, canvas.height / 2 + 40);
-    }
-
-    function resetGame() {
-      pipes = [];
-      bird.y = 150;
-      bird.velocity = 0;
-      score = 0;
-      frame = 0;
-      gameOver = false;
-    }
-
-    function handleJumpOrRestart() {
-      if (gameOver) {
-        resetGame();
-      } else {
-        bird.velocity = bird.jump;
-      }
-    }
-
-    document.addEventListener("keydown", (e) => {
-      if (e.code === "Space") {
-        handleJumpOrRestart();
-      }
-    });
-
-    document.addEventListener("touchstart", () => {
-      handleJumpOrRestart();
-    });
-
-    function loop() {
+    function draw() {
       ctx.clearRect(0, 0, canvas.width, canvas.height);
-
-      update();
-      drawBird();
-      drawPipes();
-      drawScore();
-
-      if (gameOver) {
-        showGameOver();
-      }
-
-      frame++;
-      requestAnimationFrame(loop);
+      ctx.fillStyle = player.color;
+      ctx.fillRect(player.x, player.y, player.size, player.size);
     }
 
-    loop();
+    update();
   </script>
 </body>
 </html>
