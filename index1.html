@@ -8,10 +8,10 @@
     body {
       margin: 0;
       overflow: hidden;
-      background: #87CEEB; /* sky blue */
+      background: #87CEEB; /* 하늘색 */
       font-family: sans-serif;
       position: relative;
-      padding-bottom: 100px; /* space for controls */
+      padding-bottom: 100px; /* 컨트롤 공간 확보 */
     }
 
     .canvas-container {
@@ -39,15 +39,16 @@
       position: fixed;
       bottom: 10px;
       width: 100%;
-      text-align: center;
+      display: flex;
+      justify-content: space-between;
+      padding: 0 40px;
       z-index: 2;
     }
 
     .button {
       background: rgba(255, 255, 255, 0.8);
       color: black;
-      padding: 20px;
-      margin: 0 20px;
+      padding: 20px 40px;
       font-size: 24px;
       border-radius: 10px;
       user-select: none;
@@ -129,7 +130,6 @@
     function updatePoops() {
       for (let i = poops.length - 1; i >= 0; i--) {
         poops[i].y += speed;
-        // Collision
         if (
           poops[i].y > playerY - playerSize / 2 &&
           poops[i].x > playerX - playerSize / 2 &&
@@ -138,13 +138,11 @@
           alert("똥 맞았다! 점수: " + score);
           location.reload();
         }
-        // Remove if off screen
+
         if (poops[i].y > canvas.height) {
           poops.splice(i, 1);
           score++;
           document.getElementById("score").innerText = "점수: " + score;
-
-          // Increase difficulty
           if (score % 10 === 0) {
             speed += 0.5;
           }
@@ -168,21 +166,28 @@
       poops.push({ x, y: 0, type });
     }, 800);
 
-    // Controls
-    document.getElementById("leftBtn").addEventListener("touchstart", () => {
+    function moveLeft() {
       playerX -= 50;
-    });
+      if (playerX < 0) playerX = 0;
+    }
 
-    document.getElementById("rightBtn").addEventListener("touchstart", () => {
+    function moveRight() {
       playerX += 50;
-    });
+      if (playerX > canvas.width) playerX = canvas.width;
+    }
 
-    document.getElementById("leftBtn").addEventListener("click", () => {
-      playerX -= 50;
-    });
+    document.getElementById("leftBtn").addEventListener("touchstart", moveLeft);
+    document.getElementById("rightBtn").addEventListener("touchstart", moveRight);
+    document.getElementById("leftBtn").addEventListener("click", moveLeft);
+    document.getElementById("rightBtn").addEventListener("click", moveRight);
 
-    document.getElementById("rightBtn").addEventListener("click", () => {
-      playerX += 50;
+    // 키보드 이벤트 추가
+    window.addEventListener("keydown", (e) => {
+      if (e.key === "ArrowLeft") {
+        moveLeft();
+      } else if (e.key === "ArrowRight") {
+        moveRight();
+      }
     });
 
     gameLoop();
