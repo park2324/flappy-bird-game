@@ -89,7 +89,7 @@
   </style>
 </head>
 <body>
-  <div class="score" id="score">점수: 0</div>
+  <div class="score" id="score">점수: 0 | 최고: 0</div>
   <div class="canvas-container">
     <canvas id="gameCanvas"></canvas>
   </div>
@@ -116,9 +116,9 @@
     const poopTypes = ["💩", "🤢", "🪱", "🧻"];
     const poops = [];
     let score = 0;
-    let highScore = localStorage.getItem("highScore") || 0;
     let speed = 2;
     let gameOver = false;
+    let highScore = localStorage.getItem("highScore") || 0;
 
     document.getElementById("score").innerText = `점수: ${score} | 최고: ${highScore}`;
 
@@ -166,21 +166,85 @@
       for (let i = poops.length - 1; i >= 0; i--) {
         poops[i].y += speed;
 
-        // In updatePoops() function — replace the collision check with this:
-
-      if (
-        poops[i].y + 30 > playerY - playerSize / 2 &&
-        poops[i].y < playerY + playerSize / 2 &&
-        poops[i].x + 30 > playerX - playerSize / 2 &&
-        poops[i].x < playerX + playerSize / 2
-      ) {
-        showGameOver();
-        return;
-      }
-
+        // Improved hitbox for better detection
+        if (
+          poops[i].y + 30 > playerY - playerSize / 2 &&
+          poops[i].y < playerY + playerSize / 2 &&
+          poops[i].x + 30 > playerX - playerSize / 2 &&
+          poops[i].x < playerX + playerSize / 2
+        ) {
+          showGameOver();
+          return;
+        }
 
         if (poops[i].y > canvas.height) {
           poops.splice(i, 1);
           score++;
           if (score > highScore) {
             highScore = score;
+            localStorage.setItem("highScore", highScore);
+          }
+          document.getElementById("score").innerText = `점수: ${score} | 최고: ${highScore}`;
+          if (score % 10 === 0) {
+            speed += 0.5;
+          }
+        }
+      }
+    }
+
+    function gameLoop() {
+      if (gameOver) return;
+
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      drawSunAndClouds();
+      drawGround();
+      drawPlayer();
+      drawPoops();
+      updatePoops();
+      requestAnimationFrame(gameLoop);
+    }
+
+    setInterval(() => {
+      if (gameOver) return;
+      const x = Math.random() * (canvas.width - 30);
+      const type = poopTypes[Math.floor(Math.random() * poopTypes.length)];
+      poops.push({ x, y: 0, type });
+    }, 800);
+
+    function moveLeft() {
+      playerX -= 50;
+      if (playerX < 0) playerX = 0;
+    }
+
+    function moveRight() {
+      playerX += 50;
+      if (playerX > canvas.width) playerX = canvas.width;
+    }
+
+    document.getElementById("leftBtn").addEventListener("touchstart", moveLeft);
+    document.getElementById("rightBtn").addEventListener("touchstart", moveRight);
+    document.getElementById("leftBtn").addEventListener("click", moveLeft);
+    document.getElementById("rightBtn").addEventListener("click", moveRight);
+
+    window.addEventListener("keydown", (e) => {
+      if (e.key === "ArrowLeft") {
+        moveLeft();
+      } else if (e.key === "ArrowRight") {
+        moveRight();
+      }
+    });
+
+    function showGameOver() {
+      gameOver = true;
+      document.getElementById("finalScore").innerText = `Game Over! 점수: ${score} | 최고: ${highScore}`;
+      document.getElementById("gameOverScreen").style.display = "flex";
+    }
+
+    function restartGame() {
+      location.reload(); // Refresh page to restart
+    }
+
+    gameLoop();
+  </script>
+</body>
+</html>
