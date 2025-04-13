@@ -2,113 +2,91 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Falling Object Game</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Woni Game World 🎮</title>
   <style>
     body {
       margin: 0;
-      overflow: hidden;
-      background: #222;
-    }
-    canvas {
-      display: block;
-    }
-    .controls {
-      position: absolute;
-      bottom: 20px;
-      width: 100%;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background: linear-gradient(to bottom right, #1f4037, #99f2c8);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      height: 100vh;
       text-align: center;
-      z-index: 1;
+      color: white;
     }
-    .button {
-      background: #fff;
-      color: #000;
-      padding: 20px;
-      margin: 0 20px;
-      font-size: 24px;
+
+    h1 {
+      font-size: 3em;
+      margin-bottom: 30px;
+      text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+    }
+
+    .button-container {
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+      width: 80%;
+      max-width: 400px;
+    }
+
+    .game-button {
+      padding: 15px 25px;
+      font-size: 1.2em;
+      background: #ffffff20;
+      border: 2px solid white;
+      border-radius: 15px;
+      color: white;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      backdrop-filter: blur(6px);
+    }
+
+    .game-button:hover {
+      background-color: #fff;
+      color: #1f4037;
+      font-weight: bold;
+      transform: scale(1.05);
+    }
+
+    .money-btn {
+      margin-top: 30px;
+      padding: 10px 20px;
+      font-size: 1em;
+      background-color: gold;
+      color: black;
+      border: none;
       border-radius: 10px;
-      display: inline-block;
-      user-select: none;
+      cursor: pointer;
+      transition: all 0.3s ease;
     }
-    .button:active {
-      background: #ccc;
+
+    .money-btn:hover {
+      background-color: orange;
+      transform: scale(1.05);
+    }
+
+    footer {
+      position: absolute;
+      bottom: 10px;
+      font-size: 0.9em;
+      opacity: 0.7;
     }
   </style>
 </head>
 <body>
-  <canvas id="gameCanvas"></canvas>
-  <div class="controls">
-    <span class="button" id="leftBtn">⬅️</span>
-    <span class="button" id="rightBtn">➡️</span>
+  <h1>Welcome to Woni Game World 🕹️</h1>
+
+  <div class="button-container">
+    <button class="game-button" onclick="location.href='https://park2324.github.io/flappy-bird-game/index1.html'">🎯 Game 1</button>
+    <button class="game-button" onclick="location.href='https://park2324.github.io/flappy-bird-game/index2.html'">🐤 Game 2</button>
+    <button class="game-button" onclick="location.href='https://park2324.github.io/flappy-bird-game/index3.html'">🦔 Game 3</button>
   </div>
 
-  <script>
-    const canvas = document.getElementById('gameCanvas');
-    const ctx = canvas.getContext('2d');
+  <button class="money-btn">💰 MONEY</button>
 
-    // Resize canvas to full screen
-    function resizeCanvas() {
-      canvas.width = window.innerWidth;
-      canvas.height = window.innerHeight;
-    }
-    window.addEventListener('resize', resizeCanvas);
-    resizeCanvas();
-
-    // Game object
-    const player = {
-      x: canvas.width / 2,
-      y: 0,
-      size: 50,
-      color: 'skyblue',
-      speedX: 0,
-      speedY: 2
-    };
-
-    // Movement
-    let leftPressed = false;
-    let rightPressed = false;
-
-    document.addEventListener('keydown', (e) => {
-      if (e.key === 'ArrowLeft') leftPressed = true;
-      if (e.key === 'ArrowRight') rightPressed = true;
-    });
-    document.addEventListener('keyup', (e) => {
-      if (e.key === 'ArrowLeft') leftPressed = false;
-      if (e.key === 'ArrowRight') rightPressed = false;
-    });
-
-    // Mobile controls
-    document.getElementById('leftBtn').addEventListener('touchstart', () => leftPressed = true);
-    document.getElementById('leftBtn').addEventListener('touchend', () => leftPressed = false);
-    document.getElementById('rightBtn').addEventListener('touchstart', () => rightPressed = true);
-    document.getElementById('rightBtn').addEventListener('touchend', () => rightPressed = false);
-
-    // Game loop
-    function update() {
-      // Horizontal movement
-      if (leftPressed) player.speedX = -5;
-      else if (rightPressed) player.speedX = 5;
-      else player.speedX = 0;
-
-      player.x += player.speedX;
-      player.y += player.speedY;
-
-      // Keep within bounds
-      if (player.x < 0) player.x = 0;
-      if (player.x + player.size > canvas.width) player.x = canvas.width - player.size;
-      if (player.y > canvas.height) player.y = 0; // Reset to top when it falls off
-
-      draw();
-      requestAnimationFrame(update);
-    }
-
-    function draw() {
-      ctx.clearRect(0, 0, canvas.width, canvas.height);
-      ctx.fillStyle = player.color;
-      ctx.fillRect(player.x, player.y, player.size, player.size);
-    }
-
-    update();
-  </script>
+  <footer>Made by Woni ✨</footer>
 </body>
 </html>
