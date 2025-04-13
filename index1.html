@@ -1,37 +1,29 @@
 <!DOCTYPE html>
-<html lang="ko">
+<html lang="en">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>똥 피하기 게임</title>
+  <title>Poop Dodger</title>
   <style>
     body {
       margin: 0;
       overflow: hidden;
-      background: #87CEEB; /* 하늘색 배경 */
+      background: #87CEEB; /* sky blue */
+      font-family: sans-serif;
+      position: relative;
+      padding-bottom: 100px; /* space for controls */
     }
+
+    .canvas-container {
+      position: relative;
+      height: 100vh;
+      overflow: hidden;
+    }
+
     canvas {
       display: block;
     }
-    .controls {
-      position: absolute;
-      bottom: 20px;
-      width: 100%;
-      text-align: center;
-      z-index: 2;
-    }
-    .button {
-      background: white;
-      color: black;
-      padding: 20px;
-      margin: 0 20px;
-      font-size: 24px;
-      border-radius: 10px;
-      user-select: none;
-    }
-    .button:active {
-      background: #ccc;
-    }
+
     .score {
       position: absolute;
       top: 10px;
@@ -42,163 +34,158 @@
       z-index: 2;
       text-shadow: 2px 2px 2px #000;
     }
+
+    .controls {
+      position: fixed;
+      bottom: 10px;
+      width: 100%;
+      text-align: center;
+      z-index: 2;
+    }
+
+    .button {
+      background: rgba(255, 255, 255, 0.8);
+      color: black;
+      padding: 20px;
+      margin: 0 20px;
+      font-size: 24px;
+      border-radius: 10px;
+      user-select: none;
+      box-shadow: 2px 2px 5px #888;
+    }
+
+    .button:active {
+      background: #ccc;
+    }
   </style>
 </head>
 <body>
   <div class="score" id="score">점수: 0</div>
-  <canvas id="gameCanvas"></canvas>
+  <div class="canvas-container">
+    <canvas id="gameCanvas"></canvas>
+  </div>
   <div class="controls">
     <span class="button" id="leftBtn">⬅️</span>
     <span class="button" id="rightBtn">➡️</span>
   </div>
 
   <script>
-    const canvas = document.getElementById("gameCanvas");
-    const ctx = canvas.getContext("2d");
-    const scoreElement = document.getElementById("score");
+    const canvas = document.getElementById('gameCanvas');
+    const ctx = canvas.getContext('2d');
+    canvas.width = window.innerWidth;
+    canvas.height = window.innerHeight;
 
-    function resizeCanvas() {
-      canvas.width = window.innerWidth;
-      canvas.height = window.innerHeight;
-    }
-    resizeCanvas();
-    window.addEventListener("resize", resizeCanvas);
-
-    const player = {
-      x: canvas.width / 2 - 25,
-      y: canvas.height - 100,
-      width: 50,
-      height: 50,
-      color: "black",
-      speed: 7
-    };
-
-    let poops = [];
-    const poopTypes = [
-      { size: 30, color: "brown" },
-      { size: 40, color: "darkorange" },
-      { size: 20, color: "chocolate" },
-      { size: 25, color: "saddlebrown" }
-    ];
-
-    let poopSpeed = 4;
-    const poopInterval = 800;
-
-    let leftPressed = false;
-    let rightPressed = false;
-    let gameOver = false;
+    const groundHeight = 50;
+    let playerX = canvas.width / 2;
+    const playerY = canvas.height - groundHeight - 40;
+    const playerSize = 40;
+    const poops = [];
+    const poopTypes = ["💩", "🤢", "🪱", "🧻"];
     let score = 0;
+    let speed = 2;
 
-    document.addEventListener("keydown", (e) => {
-      if (e.key === "ArrowLeft") leftPressed = true;
-      if (e.key === "ArrowRight") rightPressed = true;
-    });
-    document.addEventListener("keyup", (e) => {
-      if (e.key === "ArrowLeft") leftPressed = false;
-      if (e.key === "ArrowRight") rightPressed = false;
-    });
-
-    document.getElementById("leftBtn").addEventListener("touchstart", () => leftPressed = true);
-    document.getElementById("leftBtn").addEventListener("touchend", () => leftPressed = false);
-    document.getElementById("rightBtn").addEventListener("touchstart", () => rightPressed = true);
-    document.getElementById("rightBtn").addEventListener("touchend", () => rightPressed = false);
-
-    function spawnPoop() {
-      const type = poopTypes[Math.floor(Math.random() * poopTypes.length)];
-      const x = Math.random() * (canvas.width - type.size);
-      poops.push({ x: x, y: -type.size, size: type.size, color: type.color });
-    }
-
-    function update() {
-      if (gameOver) return;
-
-      if (leftPressed) player.x -= player.speed;
-      if (rightPressed) player.x += player.speed;
-
-      if (player.x < 0) player.x = 0;
-      if (player.x + player.width > canvas.width) player.x = canvas.width - player.width;
-
-      for (let i = 0; i < poops.length; i++) {
-        poops[i].y += poopSpeed;
-
-        if (
-          poops[i].x < player.x + player.width &&
-          poops[i].x + poops[i].size > player.x &&
-          poops[i].y < player.y + player.height &&
-          poops[i].y + poops[i].size > player.y
-        ) {
-          gameOver = true;
-          alert("💩 똥 맞았어요! 최종 점수: " + score);
-          location.reload();
-        }
-      }
-
-      // 점수 증가 & 난이도 조절
-      poops = poops.filter(poop => {
-        if (poop.y >= canvas.height - 50) {
-          score += 1;
-          scoreElement.textContent = "점수: " + score;
-
-          if (score % 10 === 0) {
-            poopSpeed += 1;
-          }
-
-          return false;
-        }
-        return true;
-      });
-
-      draw();
-      requestAnimationFrame(update);
-    }
-
-    function draw() {
-      // 배경
-      ctx.fillStyle = "#87CEEB"; // 하늘색
-      ctx.fillRect(0, 0, canvas.width, canvas.height);
-
-      drawSun();
-      drawClouds();
-
-      // 황토색 바닥
-      ctx.fillStyle = "#DEB887";
-      ctx.fillRect(0, canvas.height - 50, canvas.width, 50);
-
-      // 플레이어
-      ctx.fillStyle = player.color;
-      ctx.fillRect(player.x, player.y, player.width, player.height);
-
-      // 똥
-      poops.forEach(poop => {
-        ctx.fillStyle = poop.color;
-        ctx.beginPath();
-        ctx.arc(poop.x + poop.size / 2, poop.y + poop.size / 2, poop.size / 2, 0, Math.PI * 2);
-        ctx.fill();
-      });
-    }
-
-    function drawSun() {
+    function drawSunAndClouds() {
+      // Sun
       ctx.beginPath();
       ctx.arc(canvas.width - 80, 80, 40, 0, Math.PI * 2);
       ctx.fillStyle = "yellow";
       ctx.fill();
+
+      // Clouds
+      const clouds = [
+        { x: 100, y: 100 },
+        { x: 300, y: 80 },
+        { x: 600, y: 120 }
+      ];
+      ctx.fillStyle = "white";
+      clouds.forEach(cloud => {
+        ctx.beginPath();
+        ctx.arc(cloud.x, cloud.y, 30, 0, Math.PI * 2);
+        ctx.arc(cloud.x + 30, cloud.y + 10, 30, 0, Math.PI * 2);
+        ctx.arc(cloud.x - 30, cloud.y + 10, 30, 0, Math.PI * 2);
+        ctx.fill();
+      });
     }
 
-    function drawClouds() {
-      ctx.fillStyle = "white";
-      for (let i = 0; i < 3; i++) {
-        let x = 100 + i * 200;
-        let y = 60 + (i % 2) * 30;
-        ctx.beginPath();
-        ctx.arc(x, y, 20, 0, Math.PI * 2);
-        ctx.arc(x + 25, y + 10, 25, 0, Math.PI * 2);
-        ctx.arc(x + 50, y, 20, 0, Math.PI * 2);
-        ctx.fill();
+    function drawGround() {
+      ctx.fillStyle = "#DEB887"; // 황토색
+      ctx.fillRect(0, canvas.height - groundHeight, canvas.width, groundHeight);
+    }
+
+    function drawPlayer() {
+      ctx.fillStyle = "black";
+      ctx.beginPath();
+      ctx.arc(playerX, playerY, playerSize / 2, 0, Math.PI * 2);
+      ctx.fill();
+    }
+
+    function drawPoops() {
+      ctx.font = "30px Arial";
+      poops.forEach(p => {
+        ctx.fillText(p.type, p.x, p.y);
+      });
+    }
+
+    function updatePoops() {
+      for (let i = poops.length - 1; i >= 0; i--) {
+        poops[i].y += speed;
+        // Collision
+        if (
+          poops[i].y > playerY - playerSize / 2 &&
+          poops[i].x > playerX - playerSize / 2 &&
+          poops[i].x < playerX + playerSize / 2
+        ) {
+          alert("똥 맞았다! 점수: " + score);
+          location.reload();
+        }
+        // Remove if off screen
+        if (poops[i].y > canvas.height) {
+          poops.splice(i, 1);
+          score++;
+          document.getElementById("score").innerText = "점수: " + score;
+
+          // Increase difficulty
+          if (score % 10 === 0) {
+            speed += 0.5;
+          }
+        }
       }
     }
 
-    setInterval(spawnPoop, poopInterval);
-    update();
+    function gameLoop() {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      drawSunAndClouds();
+      drawGround();
+      drawPlayer();
+      drawPoops();
+      updatePoops();
+      requestAnimationFrame(gameLoop);
+    }
+
+    setInterval(() => {
+      const x = Math.random() * (canvas.width - 30);
+      const type = poopTypes[Math.floor(Math.random() * poopTypes.length)];
+      poops.push({ x, y: 0, type });
+    }, 800);
+
+    // Controls
+    document.getElementById("leftBtn").addEventListener("touchstart", () => {
+      playerX -= 50;
+    });
+
+    document.getElementById("rightBtn").addEventListener("touchstart", () => {
+      playerX += 50;
+    });
+
+    document.getElementById("leftBtn").addEventListener("click", () => {
+      playerX -= 50;
+    });
+
+    document.getElementById("rightBtn").addEventListener("click", () => {
+      playerX += 50;
+    });
+
+    gameLoop();
   </script>
 </body>
 </html>
