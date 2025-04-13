@@ -8,10 +8,10 @@
     body {
       margin: 0;
       overflow: hidden;
-      background: #87CEEB; /* 하늘색 */
+      background: #87CEEB;
       font-family: sans-serif;
       position: relative;
-      padding-bottom: 100px; /* 컨트롤 공간 확보 */
+      padding-bottom: 100px;
     }
 
     .canvas-container {
@@ -58,6 +58,34 @@
     .button:active {
       background: #ccc;
     }
+
+    .game-over {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100vw;
+      height: 100vh;
+      background-color: rgba(0,0,0,0.7);
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      color: white;
+      font-size: 30px;
+      z-index: 999;
+      display: none;
+    }
+
+    .game-over button {
+      margin-top: 20px;
+      padding: 10px 20px;
+      font-size: 24px;
+      border: none;
+      border-radius: 10px;
+      cursor: pointer;
+      background: white;
+      color: black;
+    }
   </style>
 </head>
 <body>
@@ -70,6 +98,11 @@
     <span class="button" id="rightBtn">➡️</span>
   </div>
 
+  <div class="game-over" id="gameOverScreen">
+    <div id="finalScore">Game Over!</div>
+    <button onclick="restartGame()">다시 시작</button>
+  </div>
+
   <script>
     const canvas = document.getElementById('gameCanvas');
     const ctx = canvas.getContext('2d');
@@ -80,19 +113,18 @@
     let playerX = canvas.width / 2;
     const playerY = canvas.height - groundHeight - 40;
     const playerSize = 40;
-    const poops = [];
     const poopTypes = ["💩", "🤢", "🪱", "🧻"];
+    const poops = [];
     let score = 0;
     let speed = 2;
+    let gameOver = false;
 
     function drawSunAndClouds() {
-      // Sun
       ctx.beginPath();
       ctx.arc(canvas.width - 80, 80, 40, 0, Math.PI * 2);
       ctx.fillStyle = "yellow";
       ctx.fill();
 
-      // Clouds
       const clouds = [
         { x: 100, y: 100 },
         { x: 300, y: 80 },
@@ -109,7 +141,7 @@
     }
 
     function drawGround() {
-      ctx.fillStyle = "#DEB887"; // 황토색
+      ctx.fillStyle = "#DEB887";
       ctx.fillRect(0, canvas.height - groundHeight, canvas.width, groundHeight);
     }
 
@@ -130,13 +162,14 @@
     function updatePoops() {
       for (let i = poops.length - 1; i >= 0; i--) {
         poops[i].y += speed;
+
         if (
           poops[i].y > playerY - playerSize / 2 &&
           poops[i].x > playerX - playerSize / 2 &&
           poops[i].x < playerX + playerSize / 2
         ) {
-          alert("똥 맞았다! 점수: " + score);
-          location.reload();
+          showGameOver();
+          return;
         }
 
         if (poops[i].y > canvas.height) {
@@ -151,6 +184,8 @@
     }
 
     function gameLoop() {
+      if (gameOver) return;
+
       ctx.clearRect(0, 0, canvas.width, canvas.height);
       drawSunAndClouds();
       drawGround();
@@ -161,6 +196,7 @@
     }
 
     setInterval(() => {
+      if (gameOver) return;
       const x = Math.random() * (canvas.width - 30);
       const type = poopTypes[Math.floor(Math.random() * poopTypes.length)];
       poops.push({ x, y: 0, type });
@@ -181,7 +217,6 @@
     document.getElementById("leftBtn").addEventListener("click", moveLeft);
     document.getElementById("rightBtn").addEventListener("click", moveRight);
 
-    // 키보드 이벤트 추가
     window.addEventListener("keydown", (e) => {
       if (e.key === "ArrowLeft") {
         moveLeft();
@@ -189,6 +224,16 @@
         moveRight();
       }
     });
+
+    function showGameOver() {
+      gameOver = true;
+      document.getElementById("finalScore").innerText = `Game Over! 점수: ${score}`;
+      document.getElementById("gameOverScreen").style.display = "flex";
+    }
+
+    function restartGame() {
+      location.reload(); // 전체 페이지 새로고침
+    }
 
     gameLoop();
   </script>
