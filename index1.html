@@ -7,12 +7,11 @@
   <style>
     body {
       margin: 0;
-      background: #87CEEB;
       overflow: hidden;
+      background: #87CEEB; /* 하늘색 배경 */
     }
     canvas {
       display: block;
-      background: #87CEEB;
     }
     .controls {
       position: absolute;
@@ -67,7 +66,7 @@
 
     const player = {
       x: canvas.width / 2 - 25,
-      y: canvas.height - 60,
+      y: canvas.height - 100,
       width: 50,
       height: 50,
       color: "black",
@@ -81,7 +80,8 @@
       { size: 20, color: "chocolate" },
       { size: 25, color: "saddlebrown" }
     ];
-    const poopSpeed = 4;
+
+    let poopSpeed = 4;
     const poopInterval = 800;
 
     let leftPressed = false;
@@ -133,12 +133,17 @@
         }
       }
 
-      // 똥이 바닥에 닿으면 점수 추가
+      // 점수 증가 & 난이도 조절
       poops = poops.filter(poop => {
-        if (poop.y >= canvas.height) {
+        if (poop.y >= canvas.height - 50) {
           score += 1;
           scoreElement.textContent = "점수: " + score;
-          return false; // 제거
+
+          if (score % 10 === 0) {
+            poopSpeed += 1;
+          }
+
+          return false;
         }
         return true;
       });
@@ -148,19 +153,48 @@
     }
 
     function draw() {
-      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      // 배경
+      ctx.fillStyle = "#87CEEB"; // 하늘색
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+      drawSun();
+      drawClouds();
+
+      // 황토색 바닥
+      ctx.fillStyle = "#DEB887";
+      ctx.fillRect(0, canvas.height - 50, canvas.width, 50);
 
       // 플레이어
       ctx.fillStyle = player.color;
       ctx.fillRect(player.x, player.y, player.width, player.height);
 
-      // 똥들
+      // 똥
       poops.forEach(poop => {
         ctx.fillStyle = poop.color;
         ctx.beginPath();
         ctx.arc(poop.x + poop.size / 2, poop.y + poop.size / 2, poop.size / 2, 0, Math.PI * 2);
         ctx.fill();
       });
+    }
+
+    function drawSun() {
+      ctx.beginPath();
+      ctx.arc(canvas.width - 80, 80, 40, 0, Math.PI * 2);
+      ctx.fillStyle = "yellow";
+      ctx.fill();
+    }
+
+    function drawClouds() {
+      ctx.fillStyle = "white";
+      for (let i = 0; i < 3; i++) {
+        let x = 100 + i * 200;
+        let y = 60 + (i % 2) * 30;
+        ctx.beginPath();
+        ctx.arc(x, y, 20, 0, Math.PI * 2);
+        ctx.arc(x + 25, y + 10, 25, 0, Math.PI * 2);
+        ctx.arc(x + 50, y, 20, 0, Math.PI * 2);
+        ctx.fill();
+      }
     }
 
     setInterval(spawnPoop, poopInterval);
