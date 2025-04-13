@@ -104,23 +104,41 @@
   </div>
 
   <script>
-    const canvas = document.getElementById('gameCanvas');
-    const ctx = canvas.getContext('2d');
-    canvas.width = window.innerWidth;
-    canvas.height = window.innerHeight;
-
-    const groundHeight = 50;
-    let playerX = canvas.width / 2;
-    const playerY = canvas.height - groundHeight - 40;
-    const playerSize = 40;
-    const poopTypes = ["💩", "🤢", "🪱", "🧻"];
-    const poops = [];
+    let canvas = document.getElementById('gameCanvas');
+    let ctx = canvas.getContext('2d');
+    let playerX, playerY;
+    let playerSize = 40;
+    let groundHeight = 50;
+    let poops = [];
     let score = 0;
     let speed = 2;
     let gameOver = false;
     let highScore = localStorage.getItem("highScore") || 0;
 
-    document.getElementById("score").innerText = `점수: ${score} | 최고: ${highScore}`;
+    // Resizing handler for mobile
+    function resizeCanvas() {
+      canvas.width = window.innerWidth;
+      canvas.height = window.innerHeight;
+      playerX = canvas.width / 2;
+      playerY = canvas.height - groundHeight - 40;
+      document.getElementById("score").innerText = `점수: ${score} | 최고: ${highScore}`;
+    }
+
+    // Initialize game
+    function init() {
+      resizeCanvas();  // Resizing when the game starts
+
+      window.addEventListener("resize", resizeCanvas);  // Handle window resize
+
+      setInterval(() => {
+        if (gameOver) return;
+        const x = Math.random() * (canvas.width - 30);
+        const type = ["💩", "🤢", "🪱", "🧻"][Math.floor(Math.random() * 4)];
+        poops.push({ x, y: 0, type });
+      }, 800);
+
+      gameLoop();
+    }
 
     function drawSunAndClouds() {
       ctx.beginPath();
@@ -166,7 +184,6 @@
       for (let i = poops.length - 1; i >= 0; i--) {
         poops[i].y += speed;
 
-        // Improved hitbox for better detection
         if (
           poops[i].y + 30 > playerY - playerSize / 2 &&
           poops[i].y < playerY + playerSize / 2 &&
@@ -204,21 +221,23 @@
       requestAnimationFrame(gameLoop);
     }
 
-    setInterval(() => {
-      if (gameOver) return;
-      const x = Math.random() * (canvas.width - 30);
-      const type = poopTypes[Math.floor(Math.random() * poopTypes.length)];
-      poops.push({ x, y: 0, type });
-    }, 800);
-
     function moveLeft() {
       playerX -= 50;
       if (playerX < 0) playerX = 0;
+      vibrate(); // Vibrate on move
     }
 
     function moveRight() {
       playerX += 50;
       if (playerX > canvas.width) playerX = canvas.width;
+      vibrate(); // Vibrate on move
+    }
+
+    // Vibrate function (vibration duration 100ms)
+    function vibrate() {
+      if (navigator.vibrate) {
+        navigator.vibrate(100); // Vibrate for 100ms
+      }
     }
 
     document.getElementById("leftBtn").addEventListener("touchstart", moveLeft);
@@ -244,7 +263,7 @@
       location.reload(); // Refresh page to restart
     }
 
-    gameLoop();
+    init();
   </script>
 </body>
 </html>
